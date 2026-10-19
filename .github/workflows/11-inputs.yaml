@@ -27,8 +27,10 @@ jobs:
               run: echo "Building...."
     deploy:
         runs-on: ubuntu-latest
+        if: ${{ !inputs.dry-run }} 
+        environment: ${{ inputs.target }}
         needs:
             - build
         steps:
             - name: Deploy
-              run: echo "Deploying..."
+              run: echo "Deploying... to ${{ inputs.target }}"
