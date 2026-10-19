@@ -15,7 +15,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: 13-caching/react-app
+                working-directory: 13-caching/template
         steps:
             - name: Checkout-code
               uses: actions/checkout@v7
