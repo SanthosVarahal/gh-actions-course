@@ -16,8 +16,63 @@ on:
                 
 
 jobs:
+    install-dep:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: 13-caching/template
+        outputs:
+            deps-cache-key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+        steps:
+            - name: checkout-code
+              uses: actions/checkout@v7
+            - name: Setup-node
+              uses: actions/setup-node@v6
+              with:
+                node-version: ${{ inputs.node-version }}
+            - name: calculate-cache-key
+              id: cache-key
+              runs: |
+                echo "CACHE_KEY=deps-node-modules-${{ hashFiles('13-caching/template/package-lock.json') }} >> $GITHUB_OUTPUT"
+            - name: Download cache dependencies
+              if: ${{ inputs.use-cache }}
+              id: cache
+              uses: actions/cache@v6
+              with:
+                path: 13-caching/template/node_modules
+                key: ${{ steps.cache.outputs.CACHE_KEY }}
+            - name: Install Dependencies
+              if: steps.cache.outputs.cache-hit != 'true'
+              run: npm ci
+    linting:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: 13-caching/template
+        needs: install-dep
+        steps:
+            - name: checkout-code
+              uses: actions/checkout@v7
+            - name: Setup-node
+              uses: actions/setup-node@v6
+              with:
+                node-version: ${{ inputs.node-version }}
+            - name: Download cached dependencies
+              if: ${{ inputs.use-cache }}
+              id: cache
+              uses: actions/cache@v6
+              with:
+                path: 13-caching/template/node_modules
+                key: ${{ steps.cache.outputs.CACHE_KEY }}
+            - name: Testing
+              run: npm run test
+            - name: Linting
+              run: echo "Linting...."
+              
+        
     build:
         runs-on: ubuntu-latest
+        needs: install-dep
 
         defaults:
             run:
@@ -35,12 +90,7 @@ jobs:
               uses: actions/cache@v6
               with:
                 path: 13-caching/template/node_modules
-                key: deps-node-modules-${{ hashFiles('13-caching/template/package-lock.json') }}  
-            - name: Install Dependencies
-              if: steps.cache.outputs.cache-hit != 'true'
-              run: npm ci
-            - name: Testing
-              run: npm run test
+                key: ${{ needs.install-dep.outputs.deps-cache-key }}
             - name: Building
               run: npm run build
             - name: Deploying
