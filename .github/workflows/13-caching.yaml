@@ -32,7 +32,7 @@ jobs:
                 node-version: ${{ inputs.node-version }}
             - name: calculate-cache-key
               id: cache-key
-              runs: |
+              run: |
                 echo "CACHE_KEY=deps-node-modules-${{ hashFiles('13-caching/template/package-lock.json') }} >> $GITHUB_OUTPUT"
             - name: Download cache dependencies
               if: ${{ inputs.use-cache }}
