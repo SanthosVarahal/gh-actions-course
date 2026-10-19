@@ -28,6 +28,5 @@ jobs:
       - name: Overwrite Job Variable
         env: 
           OVERWRITTEN: 'I have been overwritten at the step level'
-        if: github.ref == 'refs/heads/main'
         run: |
-          echo "Step env var: ${{ env.OVERWRITTEN }}"
+          echo "Overwritten: ${{ env.OVERWRITTEN }}"
